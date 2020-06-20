@@ -1,0 +1,11 @@
+<launch>
+    <node pkg="rosaria" type="RosAria" name="RosAria" />
+    <node pkg="robotika_proekt" type="camera_node.py" name="camera_node" />
+    <node pkg="robotika_proekt" type="image_display_node.py" name="image_display_node" />
+    <node pkg="robotika_proekt" type="image_processing_node.py" name="image_processing_node" />
+    <node pkg="robotika_proekt" type="database_node.py" name="database_node" />
+    <node pkg="robotika_proekt" type="message_sending_node.py" name="message_sending_node" output="screen" />
+    <node pkg="robotika_proekt" type="sensors_node.py" name="sensor_node" />
+    <node pkg="robotika_proekt" type="motors_node.py" name="motors_node" />
+    <node pkg="robotika_proekt" type="main_controller_node.py" name="main_controller_node" output="screen" />
+</launch>

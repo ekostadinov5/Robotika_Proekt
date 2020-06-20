@@ -153,6 +153,7 @@ def callback(img_msg):
         for startX, startY, endX, endY in boxes:
             try:
                 region = image[startY - 10:endY + 10, startX - 10:endX + 10]
+
                 text = pytesseract.image_to_string(cv2.cvtColor(region, cv2.COLOR_BGR2RGB))
 
                 rospy.loginfo("Text: " + text)

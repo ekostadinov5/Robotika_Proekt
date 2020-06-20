@@ -1,10 +1,17 @@
 #!/usr/bin/env python
 
 import rospy
+from std_msgs.msg import Bool
 from std_msgs.msg import String
 from robotika_proekt.srv import DatabaseService
 from robotika_proekt.srv import MessageSendingService
 from time import sleep
+
+
+move = False
+wait = False
+
+pub = rospy.Publisher("velocity_cmd", Bool, queue_size=5)
 
 
 def send_request_ms(client):
@@ -23,6 +30,8 @@ def send_request_ms(client):
 
 
 def send_request_db(address):
+    global wait
+
     rospy.wait_for_service("database_service")
     try:
         service = rospy.ServiceProxy("database_service", DatabaseService)
@@ -32,32 +41,51 @@ def send_request_db(address):
         client = response.client
 
         if client.id != 0:
-            # Stop motors
-
-            rospy.loginfo("STOPPING MOTORS")
+            wait = True
 
             send_request_ms(client)
             sleep(10)
 
-            # Activate motors
+            wait = False
 
-            rospy.loginfo("MOTORS ACTIVATED")
     except rospy.ServiceException as e:
         rospy.loginfo("Service access failed: %s" % e)
 
 
-def callback(addr_msg):
-    rospy.loginfo("Address: " + addr_msg.data)
+def sensor_data_callback(sensor_data_msg):
+    global move
+
+    if sensor_data_msg.data:
+        move = False  # Obstacle in the way
+    else:
+        move = True  # Path is clear
+
+
+def address_callback(addr_msg):
+    # rospy.loginfo("Address: " + addr_msg.data)
 
     send_request_db(addr_msg.data)
 
 
 def main_controller_node():
+    global move
+    global pub
+
     rospy.init_node('main_controller_node')
 
-    rospy.Subscriber("address", String, callback)
+    rospy.Subscriber("sensor_data", Bool, sensor_data_callback)
 
-    rospy.spin()
+    rospy.Subscriber("address", String, address_callback)
+
+    rate = rospy.Rate(20)
+
+    while not rospy.is_shutdown():
+        if move and not wait:
+            pub.publish(Bool(True))
+        else:
+            pub.publish(Bool(False))
+
+        rate.sleep()
 
 
 if __name__ == "__main__":

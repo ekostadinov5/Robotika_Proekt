@@ -29,7 +29,12 @@ def find(address):
 def handle_request(data):
     client = find(data.address)
     if client is not None:
-        rospy.loginfo(client)
+        rospy.loginfo("CLIENT:")
+        rospy.loginfo("\tid: " + str(client["id"]))
+        rospy.loginfo("\tname: " + client["name"])
+        rospy.loginfo("\tsurname: " + client["surname"])
+        rospy.loginfo("\taddress: " + client["address"])
+        rospy.loginfo("\tto_deliver: " + str(client["to_deliver"]))
 
         client["to_deliver"] = False
 
