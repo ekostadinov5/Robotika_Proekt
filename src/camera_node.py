@@ -6,6 +6,7 @@ from cv_bridge import CvBridge
 import cv2
 
 
+# Global variables
 bridge = CvBridge()
 cap = cv2.VideoCapture(0)  # 0 == Laptop's camera
 

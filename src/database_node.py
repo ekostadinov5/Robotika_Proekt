@@ -6,6 +6,7 @@ from robotika_proekt.srv import DatabaseService
 from robotika_proekt.srv import DatabaseServiceResponse
 
 
+# Global variables
 db = [
     {
         "id": 1,
@@ -28,6 +29,7 @@ def find(address):
 
 def handle_request(data):
     client = find(data.address)
+
     if client is not None:
         rospy.loginfo("CLIENT:")
         rospy.loginfo("\tid: " + str(client["id"]))

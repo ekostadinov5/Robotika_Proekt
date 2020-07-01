@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 
 import rospy
-from robotika_proekt.msg import Client
 from robotika_proekt.srv import MessageSendingService
 from robotika_proekt.srv import MessageSendingServiceResponse
 

@@ -1,20 +1,21 @@
 #!/usr/bin/env python
 
 import rospy
-from std_msgs.msg import Bool
 from std_msgs.msg import String
 from robotika_proekt.srv import DatabaseService
 from robotika_proekt.srv import MessageSendingService
 from time import sleep
 
 
-move = False
+# Global variables
+move = ""
 wait = False
-
-pub = rospy.Publisher("velocity_cmd", Bool, queue_size=5)
 
 
 def send_request_ms(client):
+    """
+    Sends a request to the message sending service node
+    """
     rospy.wait_for_service("message_sending_service")
     try:
         service = rospy.ServiceProxy("message_sending_service", MessageSendingService)
@@ -30,60 +31,91 @@ def send_request_ms(client):
 
 
 def send_request_db(address):
-    global wait
-
+    """
+    Sends a request to the database service node and returns its response
+    """
     rospy.wait_for_service("database_service")
     try:
         service = rospy.ServiceProxy("database_service", DatabaseService)
 
         response = service(address)
 
+        return response
+    except rospy.ServiceException as e:
+        rospy.loginfo("Service access failed: %s" % e)
+
+
+def address_callback(addr_msg):
+    global wait
+
+    # rospy.loginfo("Address: " + addr_msg.data)
+
+    # Send a request to the database
+    response = send_request_db(addr_msg.data)
+
+    try:
+        # Get the client object from the database response
         client = response.client
 
+        # Check if it's a valid client object
         if client.id != 0:
+            # Stop the motors
             wait = True
 
+            # Send the client a message
             send_request_ms(client)
             sleep(10)
 
+            # Activate the motors
             wait = False
-
-    except rospy.ServiceException as e:
-        rospy.loginfo("Service access failed: %s" % e)
+    except Exception as e:
+        pass
 
 
 def sensor_data_callback(sensor_data_msg):
     global move
 
-    if sensor_data_msg.data:
-        move = False  # Obstacle in the way
-    else:
-        move = True  # Path is clear
+    obstacle = sensor_data_msg.data
 
-
-def address_callback(addr_msg):
-    # rospy.loginfo("Address: " + addr_msg.data)
-
-    send_request_db(addr_msg.data)
+    if obstacle == "Both":  # If it's a dead end, turn 180 degrees
+        move = "Backwards"
+    elif obstacle == "Left":  # If there's an obstacle to the left, turn right
+        move = "Right"
+    elif obstacle == "Right":  # If there's an obstacle to the right, turn left
+        move = "Left"
+    elif obstacle == "None":  # If there's no obstacle, continue moving forward
+        move = "Forward"
+    else:  # In any other situation, stop.
+        move = "Stop"
 
 
 def main_controller_node():
     global move
-    global pub
+
+    sleep(20)  # For testing
 
     rospy.init_node('main_controller_node')
 
-    rospy.Subscriber("sensor_data", Bool, sensor_data_callback)
+    pub = rospy.Publisher("velocity_cmd", String, queue_size=5)
+
+    rospy.Subscriber("sensor_data", String, sensor_data_callback)
 
     rospy.Subscriber("address", String, address_callback)
 
     rate = rospy.Rate(20)
 
     while not rospy.is_shutdown():
-        if move and not wait:
-            pub.publish(Bool(True))
+        if not wait:
+            pub.publish(String(move))
+
+            if move == "Backwards":  # Turn 180 degrees
+                sleep(16)
+            if move == "Right":  # Turn 90 degrees to the right
+                sleep(8)
+            if move == "Left":  # Turn 90 degrees to the left
+                sleep(8)
         else:
-            pub.publish(Bool(False))
+            pub.publish(String("Stop"))
 
         rate.sleep()
 

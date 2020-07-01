@@ -6,6 +6,7 @@ from cv_bridge import CvBridge, CvBridgeError
 import cv2
 
 
+# Global variables
 bridge = CvBridge()
 
 

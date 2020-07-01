@@ -1,16 +1,18 @@
 #!/usr/bin/env python
 
 import rospy
-from std_msgs.msg import Bool
+from std_msgs.msg import String
 from geometry_msgs.msg import Twist
 from geometry_msgs.msg import Vector3
 
 
-cmd = False  # True == move, False == stop
+# Global variables
+cmd = ""
 
 
 def callback(cmd_msg):
     global cmd
+
     cmd = cmd_msg.data
 
 
@@ -21,20 +23,31 @@ def motors_node():
 
     pub = rospy.Publisher("/RosAria/cmd_vel", Twist, queue_size=5)
 
-    rospy.Subscriber("velocity_cmd", Bool, callback)
+    rospy.Subscriber("velocity_cmd", String, callback)
 
     rate = rospy.Rate(20)
 
     while not rospy.is_shutdown():
-        rospy.loginfo("MOVE") if cmd else rospy.loginfo("STOP")
+        rospy.loginfo(cmd)
 
-        if cmd:
-            linear = Vector3(x=0.05, y=0.0, z=0.0)
+        if cmd == "Backwards":  # Rotate to the right / left
+            linear = Vector3(x=0.0, y=0.0, z=0.0)
+            angular = Vector3(x=0.0, y=0.0, z=0.2)
+        elif cmd == "Right":  # Rotate to the right
+            linear = Vector3(x=0.0, y=0.0, z=0.0)
+            angular = Vector3(x=0.0, y=0.0, z=-0.2)
+        elif cmd == "Left":  # Rotate to the left
+            linear = Vector3(x=0.0, y=0.0, z=0.0)
+            angular = Vector3(x=0.0, y=0.0, z=0.2)
+        elif cmd == "Forward":  # Move forward
+            linear = Vector3(x=0.125, y=0.0, z=0.0)
+            angular = Vector3(x=0.0, y=0.0, z=0.0)
+        else:  # Stop
+            linear = Vector3(x=0.0, y=0.0, z=0.0)
             angular = Vector3(x=0.0, y=0.0, z=0.0)
 
-            twist = Twist(linear=linear, angular=angular)
-
-            pub.publish(twist)
+        twist = Twist(linear=linear, angular=angular)
+        pub.publish(twist)
 
         rate.sleep()
 
