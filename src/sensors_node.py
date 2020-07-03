@@ -42,9 +42,9 @@ def callback(sensor_data_msg):
     if d3 < 0.75 or d4 < 0.75:
         if d0 < 0.75 and d7 < 0.75:  # Obstacles in the front, to the right and to the left - a dead end.
             pub.publish(String("Both"))
-        elif d0 < 0.75:  # Obstacles in the front and to the left
+        elif d0 < 0.55:  # Obstacles in the front and to the left
             pub.publish(String("Left"))
-        elif d7 < 0.75:  # Obstacles in the front and to the right
+        elif d7 < 0.55:  # Obstacles in the front and to the right
             pub.publish(String("Right"))
         else:  # Obstacle in the front
             pub.publish("Front")

@@ -10,6 +10,7 @@ from time import sleep
 # Global variables
 move = ""
 wait = False
+turning = False
 
 
 def send_request_ms(client):
@@ -47,29 +48,32 @@ def send_request_db(address):
 
 def address_callback(addr_msg):
     global wait
+    global turning
 
     # rospy.loginfo("Address: " + addr_msg.data)
 
-    # Send a request to the database
-    response = send_request_db(addr_msg.data)
+    # Check if the robot is moving forward or turning
+    if not turning:
+        # Send a request to the database
+        response = send_request_db(addr_msg.data)
 
-    try:
-        # Get the client object from the database response
-        client = response.client
+        try:
+            # Get the client object from the database response
+            client = response.client
 
-        # Check if it's a valid client object
-        if client.id != 0:
-            # Stop the motors
-            wait = True
+            # Check if it's a valid client object
+            if client.id != 0:
+                # Stop the motors
+                wait = True
 
-            # Send the client a message
-            send_request_ms(client)
-            sleep(10)
+                # Send the client a message
+                send_request_ms(client)
+                sleep(10)
 
-            # Activate the motors
-            wait = False
-    except Exception as e:
-        pass
+                # Activate the motors
+                wait = False
+        except Exception as e:
+            pass
 
 
 def sensor_data_callback(sensor_data_msg):
@@ -91,8 +95,9 @@ def sensor_data_callback(sensor_data_msg):
 
 def main_controller_node():
     global move
+    global turning
 
-    sleep(20)  # For testing
+    # sleep(20)  # For testing
 
     rospy.init_node('main_controller_node')
 
@@ -109,11 +114,17 @@ def main_controller_node():
             pub.publish(String(move))
 
             if move == "Backwards":  # Turn 180 degrees
+                turning = True
                 sleep(16)
+                turning = False
             if move == "Right":  # Turn 90 degrees to the right
+                turning = True
                 sleep(8)
+                turning = False
             if move == "Left":  # Turn 90 degrees to the left
+                turning = True
                 sleep(8)
+                turning = False
         else:
             pub.publish(String("Stop"))
 

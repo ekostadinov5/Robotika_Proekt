@@ -12,7 +12,21 @@ db = [
         "id": 1,
         "name": "John",
         "surname": "Smith",
-        "address": "sony",
+        "address": "adresabr1",
+        "to_deliver": True
+    },
+    {
+        "id": 2,
+        "name": "Peter",
+        "surname": "Johnson",
+        "address": "adresabr2",
+        "to_deliver": True
+    },
+    {
+        "id": 3,
+        "name": "Forest",
+        "surname": "Gump",
+        "address": "adresabr3",
         "to_deliver": True
     }
 ]
