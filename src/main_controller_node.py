@@ -95,6 +95,7 @@ def sensor_data_callback(sensor_data_msg):
 
 def main_controller_node():
     global move
+    global wait
     global turning
 
     # sleep(20)  # For testing
